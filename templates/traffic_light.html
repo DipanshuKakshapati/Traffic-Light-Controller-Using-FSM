@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traffic Light Simulation</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-image: url('/static/e.jpg'); /* Path to your image */
+            background-size: cover;
+            background-position: center;
+        }
+        .title {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #fff;
+            text-align: center;
+        }
+        .button-container {
+            display: flex;
+            justify-content: center; /* Center the single button */
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #4caf50;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        #message {
+            margin-top: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #fff; /* Ensure text is readable on the background */
+        }
+        #circle {
+            margin-top: 50px;
+            width: 50px;
+            height: 50px;
+            background-color: yellow;
+            border-radius: 50%;
+        }
+    </style>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+</head>
+<body>
+    <div class="title">Traffic Light Controller Using FSM</div>
+    <div class="button-container">
+        <button id="startButton">Let's start</button>
+    </div>
+    <div id="message">Click "Let's start" to begin!</div>
+    <div id="circle"></div>
+
+    <script>
+        const socket = io('http://localhost:5001'); // Connect to the server
+        let previousState = "Green"; // Initialize the previous state as Green
+
+        document.getElementById("startButton").addEventListener("click", () => {
+            socket.emit('start_traffic_light'); // Notify the server to start the FSM
+        });
+
+        // Listen for state updates from the server
+        socket.on('new_state', (data) => {
+            const { state, timer } = data;
+            const messageElement = document.getElementById("message");
+            const circleElement = document.getElementById("circle");
+
+            // Update the message
+            messageElement.textContent = `${state} Light in ${timer} sec`;
+
+            // Set the circle's color to the previous state's color
+            if (state === "Red") {
+                circleElement.style.backgroundColor = "yellow"; // Previous state is Yellow
+            } else if (state === "Green") {
+                circleElement.style.backgroundColor = "red"; // Previous state is Red
+            } else if (state === "Yellow") {
+                circleElement.style.backgroundColor = "green"; // Previous state is Green
+            }
+
+            // Update the previous state to the current state
+            previousState = state;
+        });
+    </script>
+</body>
+</html>
